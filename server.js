@@ -1,31 +1,36 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
+const express   = require('express');
+const mongoose  = require('mongoose');
+const cors      = require('cors');
+const dotenv    = require('dotenv');
+const path      = require('path');
 
-const app = express();
 dotenv.config();
 
+const app = express();
+
+// ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
 
-// Import routes
-const registrationRoutes = require('./routes/registrationRoutes');
-const contactRoutes = require('./routes/contactRoutes');
+// ─── Serve uploaded images statically ─────────────────────────────────────────
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Use routes
+// ─── Routes ───────────────────────────────────────────────────────────────────
+const registrationRoutes = require('./routes/registrationRoutes');
+const contactRoutes      = require('./routes/contactRoutes');
+
 app.use('/api', registrationRoutes);
 app.use('/api', contactRoutes);
 
-// Connect to MongoDB
+// ─── Connect to MongoDB ───────────────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
+  useNewUrlParser:    true,
   useUnifiedTopology: true
 })
 .then(() => console.log('MongoDB connected'))
-.catch((err) => console.error('MongoDB error:', err));
+.catch((err) => console.error('MongoDB connection error:', err));
 
-// Start server
+// ─── Start Server ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
